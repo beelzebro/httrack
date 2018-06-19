@@ -6,7 +6,8 @@ build:
       name: build
       code: |
         dnf groupinstall "Development Tools" --setopt=install_weak_deps=False -y
-        dnf install {zlib,openssl}-devel --setopt=install_weak_deps=False -y
+        dnf install {zlib,openssl}-devel git --setopt=install_weak_deps=False -y
+        git submodule update --init
         ./configure
         make
         make install
