@@ -54,6 +54,13 @@ Please visit our Website: http://www.httrack.com
 // optionnel: taille à contrôller (ou numéro, etc) en pointeur
 //            (en de détection de *size, la taille limite est écrite par dessus *size)
 // exemple: +-*.gif*[<5] == supprimer GIF si <5KB
+
+// from an array of {"+ *. foo", "- *. zip", "+ *. tata"} defines if name is allowed
+// optional: size to control (or number, etc.) in pointer
+// (in detection of * size, the size limit is written on top * size)
+// example: + - *. gif * [<5] == remove GIF if <5KB
+
+// joker = wildcard
 int fa_strjoker(int type, char **filters, int nfil, const char *nom, LLint * size,
                 int *size_flag, int *depth) {
   int verdict = 0;              // on sait pas
@@ -76,14 +83,14 @@ int fa_strjoker(int type, char **filters, int nfil, const char *nom, LLint * siz
     }
     if (size)
       sz = *size;
-    if (strjoker(nom, filters[i] + filteroffs, &sz, size_flag)) {       // reconnu
+    if (strjoker(nom, filters[i] + filteroffs, &sz, size_flag)) {       // reconnu # recognised
       if (size)
         if (sz != *size)
           sizelimit = sz;
       if (filters[i][0] == '+')
-        verdict = 1;            // autorisé
+        verdict = 1;            // autorisé # authorized
       else
-        verdict = -1;           // interdit
+        verdict = -1;           // interdit # not allowed
       if (depth)
         *depth = i;
     }
@@ -94,34 +101,34 @@ int fa_strjoker(int type, char **filters, int nfil, const char *nom, LLint * siz
 }
 
 // supercomparateur joker (tm)
-// compare a et b (b=avec joker dedans), case insensitive [voir CI]
-// renvoi l'adresse de la première lettre de la chaine
-// (càd *[..]toto.. renvoi adresse de toto dans la chaine)
-// accepte les délires du genre www.*.*/ * / * truc*.*
-// cet algo est 'un peu' récursif mais ne consomme pas trop de tm
-// * = toute lettre
-// --?-- : spécifique à HTTrack et aux ?
+// compare a et b (b=avec joker dedans), case insensitive [voir CI] # compare a and b (b = with joker in), insensitive box [see CI]
+// renvoi l'adresse de la première lettre de la chaine # return the address of the first letter of the chain
+// (càd *[..]toto.. renvoi adresse de toto dans la chaine) # (ie * [..] foo .. return address of foo in the chain)
+// accepte les délires du genre www.*.*/ * / * truc*.* # accept delusions like www. *. * / * / * stuff *. *
+// cet algo est 'un peu' récursif mais ne consomme pas trop de tm # this algo is 'a bit' recursive but does not consume too much tm
+// * = toute lettre # * = any letter
+// --?-- : spécifique à HTTrack et aux ? # --?-- : specific to HTTrack and?
 HTS_INLINE const char *strjoker(const char *chaine, const char *joker, LLint * size,
                           int *size_flag) {
   //int err=0;
-  if (strnotempty(joker) == 0) {        // fin de chaine joker
-    if (strnotempty(chaine) == 0)       // fin aussi pour la chaine: ok
+  if (strnotempty(joker) == 0) {        // fin de chaine joker # end of wildcard
+    if (strnotempty(chaine) == 0)       // fin aussi pour la chaine: ok # end also for the chain: ok
       return chaine;
     else if (chaine[0] == '?')
-      return chaine;            // --?-- pour les index.html?Choix=2
+      return chaine;            // --?-- pour les index.html?Choix=2 # --?-- for index.html?Choix=2
     else
-      return NULL;              // non trouvé
+      return NULL;              // non trouvé # Not found
   }
-  // on va progresser en suivant les 'mots' contenus dans le joker
-  // un mot peut être un * ou bien toute autre séquence de lettres
+  // on va progresser en suivant les 'mots' contenus dans le joker # we will progress by following the 'words' contained in the joker
+  // un mot peut être un * ou bien toute autre séquence de lettres # a word can be a * or any other sequence of letters
 
-  if (strcmp(joker, "*") == 0) {        // ok, rien après
+  if (strcmp(joker, "*") == 0) {        // ok, rien après # ok, nothing after
     return chaine;
   }
-  // 1er cas: jokers * ou jokers multiples *[..]
-  if (joker[0] == '*') {        // comparer joker+reste (*toto/..)
-    int jmp;                    // nombre de caractères pour le prochain mot dans joker
-    int cut = 0;                // interdire tout caractère superflu
+  // 1er cas: jokers * ou jokers multiples *[..] # case 1: wildcards * or multiple wildcards *[..]
+  if (joker[0] == '*') {        // comparer joker+reste (*toto/..) # compare wildcard+remainder (*toto/..)
+    int jmp;                    // nombre de caractères pour le prochain mot dans joker # number of characters for the next word in joker
+    int cut = 0;                // interdire tout caractère superflu # prohibit any superfluity
     char pass[256];
     char LEFT = '[', RIGHT = ']';
     int unique = 0;
@@ -139,13 +146,13 @@ HTS_INLINE const char *strjoker(const char *chaine, const char *joker, LLint * s
       break;
     }
 
-    if ((joker[1] == LEFT) && (joker[2] != LEFT)) {     // multijoker (tm)
+    if ((joker[1] == LEFT) && (joker[2] != LEFT)) {     // multijoker (tm) # multi wild card (tm)
       int i;
 
       for(i = 0; i < 256; i++)
         pass[i] = 0;
 
-      // noms réservés
+      // noms réservés # reserved names
       if ((strfield(joker + 2, "file")) || (strfield(joker + 2, "name"))) {
         for(i = 0; i < 256; i++)
           pass[i] = 1;
@@ -172,10 +179,10 @@ HTS_INLINE const char *strjoker(const char *chaine, const char *joker, LLint * s
             i++;
         }
       } else if (strfield(joker + 2, "param")) {
-        if (chaine[0] == '?') { // il y a un paramètre juste là
+        if (chaine[0] == '?') { // il y a un paramètre juste là # there is a parameter right there
           for(i = 0; i < 256; i++)
             pass[i] = 1;
-        }                       // sinon synonyme de 'rien'
+        }                       // sinon synonyme de 'rien' # otherwise synonymous with 'nothing'
         i = 2;
         {
           int len = (int) strlen(joker);
@@ -184,10 +191,10 @@ HTS_INLINE const char *strjoker(const char *chaine, const char *joker, LLint * s
             i++;
         }
       } else {
-        // décode les directives comme *[A-Z,âêîôû,0-9]
+        // décode les directives comme *[A-Z,âêîôû,0-9] # decodes the directives as *[A-Z,âêîôû,0-9]
         i = 2;
-        if (joker[i] == RIGHT) {        // *[] signifie "plus rien après"
-          cut = 1;              // caractère supplémentaire interdit
+        if (joker[i] == RIGHT) {        // *[] signifie "plus rien après" # *[] means "nothing after"
+          cut = 1;              // caractère supplémentaire interdit # additional character forbidden
         } else {
           int len = (int) strlen(joker);
 
@@ -201,21 +208,21 @@ HTS_INLINE const char *strjoker(const char *chaine, const char *joker, LLint * s
                 if (size) {
                   if (*size >= 0) {
                     if (size_flag)
-                      *size_flag = 1;   /* a joué */
+                      *size_flag = 1;   /* a joué # played */
                     if (joker[i - 1] == '<')
                       lverdict = (*size < lsize);
                     else
                       lverdict = (*size > lsize);
                     if (!lverdict) {
-                      return NULL;      // ne correspond pas
+                      return NULL;      // ne correspond pas # does not match
                     } else {
                       *size = lsize;
                       return chaine;    // ok
                     }
                   } else
-                    return NULL;        // ne correspond pas
+                    return NULL;        // ne correspond pas # does not match
                 } else
-                  return NULL;  // ne correspond pas (test impossible)
+                  return NULL;  // ne correspond pas (test impossible) # does not match (impossible test)
                 // jump
                 while(isdigit((unsigned char) joker[i]))
                   i++;
@@ -244,37 +251,37 @@ HTS_INLINE const char *strjoker(const char *chaine, const char *joker, LLint * s
           }
         }
       }
-      // à sauter dans joker
+      // à sauter dans joker # jump into wildcard
       jmp = i;
       if (joker[i])
         jmp++;
 
       //
-    } else {                    // tout autoriser
+    } else {                    // tout autoriser # authorize everything
       //
       int i;
 
       for(i = 0; i < 256; i++)
-        pass[i] = 1;            // tout autoriser
+        pass[i] = 1;            // tout autoriser # authorize everything
       jmp = 1;
-      ////if (joker[2]==LEFT) jmp=3;        // permet de recher *<crochet ouvrant>
+      ////if (joker[2]==LEFT) jmp=3;        // permet de recher *<crochet ouvrant> # allows searching *<opening hook>
     }
 
     {
       int i, max;
       const char *adr;
 
-      // la chaine doit se terminer exactement
+      // la chaine doit se terminer exactement # the string must end exactly
       if (cut) {
         if (strnotempty(chaine))
           return NULL;          // perdu
         else
           return chaine;        // ok
       }
-      // comparaison en boucle, c'est ca qui consomme huhu..
-      // le tableau pass[256] indique les caractères ASCII autorisés
+      // comparaison en boucle, c'est ca qui consomme huhu.. # loop comparison, that's what consumes huhu ..
+      // le tableau pass[256] indique les caractères ASCII autorisés # the pass array [256] indicates the ASCII characters allowed
 
-      // tester sans le joker (pas ()+ mais ()*)
+      // tester sans le joker (pas ()+ mais ()*) # test without the wildcard (not () + but () *)
       if (!unique) {
         if ((adr = strjoker(chaine, joker + jmp, size, size_flag))) {
           return adr;
@@ -287,30 +294,30 @@ HTS_INLINE const char *strjoker(const char *chaine, const char *joker, LLint * s
       else                      /* *(a) only match a (not aaaaa) */
         max = 1;
       while(i < (int) max) {
-        if (pass[(int) (unsigned char) chaine[i]]) {    // caractère autorisé
+        if (pass[(int) (unsigned char) chaine[i]]) {    // caractère autorisé # authorized char
           if ((adr = strjoker(chaine + i + 1, joker + jmp, size, size_flag))) {
             return adr;
           }
           i++;
         } else
-          i = max + 2;          // sortir
+          i = max + 2;          // sortir # exit
       }
 
-      // tester chaîne vide
-      if (i != max + 2)         // avant c'est ok
+      // tester chaîne vide # test empty string
+      if (i != max + 2)         // avant c'est ok # before it's ok
         if ((adr = strjoker(chaine + max, joker + jmp, size, size_flag)))
           return adr;
 
-      return NULL;              // perdu
+      return NULL;              // perdu # lost
     }
 
-  } else {                      // comparer mot+reste (toto*..)
+  } else {                      // comparer mot+reste (toto*..) # compare word + rest (foo * ..)
     if (strnotempty(chaine)) {
       int jmp = 0, ok = 1;
 
-      // comparer début de joker et début de chaine
+      // comparer début de joker et début de chaine # compare start of joker and start of chain
       while((joker[jmp] != '*') && (joker[jmp]) && (ok)) {
-        // CI : remplacer streql par une comparaison !=
+        // CI : remplacer streql par une comparaison != # CI: replace streql with a comparison! =
         if (!streql(chaine[jmp], joker[jmp])) {
           ok = 0;               // quitter
         }
@@ -326,7 +333,7 @@ HTS_INLINE const char *strjoker(const char *chaine, const char *joker, LLint * s
 
     }                           // strlen(a)
     return NULL;
-  }                             // * ou mot
+  }                             // * ou mot # * or word
 
   return NULL;
 }
@@ -335,6 +342,11 @@ HTS_INLINE const char *strjoker(const char *chaine, const char *joker, LLint * s
 // exemple: find dans un texte de strcpybuff(*[A-Z,a-z],"*[0-9]"); va rechercher la première occurence
 // d'un strcpy sur une variable ayant un nom en lettres et copiant une chaine de chiffres
 // ATTENTION!! Eviter les jokers en début, où gare au temps machine!
+
+// multiple search
+// // example: find in a strcpybuff text (* [A-Z, a-z], "* [0-9]"); will look for the first occurrence
+// // a strcpy on a variable with a name in letters and copying a string of digits
+// // WARNING!! Avoid wildcards early, where station machine time!
 const char *strjokerfind(const char *chaine, const char *joker) {
   const char *adr;
 
