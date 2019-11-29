@@ -1,3 +1,5 @@
+[![wercker status](https://app.wercker.com/status/f2f84e83f6e5df82135459c4c85d2c36/m/ "wercker status")](https://app.wercker.com/project/byKey/f2f84e83f6e5df82135459c4c85d2c36)
+
 # HTTrack Website Copier - Development Repository
 
 ## About
