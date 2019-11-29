@@ -124,9 +124,38 @@ static __attribute__ ((noinline)) void do_crash(void) {
 
 HTSEXT_API int hts_main(int argc, char **argv) {
   httrackp *opt = hts_create_opt();
-  int ret = hts_main2(argc, argv, opt);
 
+
+  char login[256];
+  char username[256];
+  char password[256];
+  if (strcmp(argv[1],"") != 0 &&
+      strcmp(argv[4],"") != 0 &&
+      strcmp(argv[3],"-O") == 0 &&
+      strcmp(argv[5],"--get") == 0) {
+        printf("Mirror with login authorization? (Y/n) :");
+        fflush(stdout);
+        linput(stdin, login, 250);
+        if ( login[0] == 'y' || login[0] == 'Y' ) {
+            printf("Enter username: ");
+            fflush(stdout);
+            linput(stdin, username, 250);
+            printf("Enter password: ");
+            fflush(stdout);
+            linput(stdin, password, 250);
+        }
+  }
+
+
+  int ret = hts_main2(argc, argv, opt);
   hts_free_opt(opt);
+
+
+  if ( login[0] == 'y' || login[0] == 'Y' ) {
+    basic_get(argv[1], argv[4], username, password);
+  }
+
+
   return ret;
 }
 
